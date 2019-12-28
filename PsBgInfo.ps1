@@ -20,8 +20,8 @@ $textColor = "White"
 
 # Logo Config
 $logoFile = "$PSScriptRoot\logo.png"
-$logoWidth = 500
-$logoHeight = 500
+$logoWidth = 250
+$logoHeight = 250
 $logoPaddingRight = 50
 $logoPaddingTop = 50
 
