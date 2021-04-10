@@ -19,7 +19,7 @@ $textColor = "White"
 
 
 # Logo Config
-$logoFile = "$PSScriptRoot\logo.png"
+#$logoFile = "$PSScriptRoot\logo.png"
 $logoWidth = 250
 $logoHeight = 250
 $logoPaddingRight = 50
@@ -53,6 +53,7 @@ param(
 ## Prepare System Information ##
 
 $OsInfo = Get-siOSInfo
+$WinInfo = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
 
 $Proc = [object[]]$(get-WMIObject Win32_Processor)
 $Core = $Proc.count
@@ -86,7 +87,7 @@ $NetworkInfo =  (Get-NetAdapter | Where-Object { $_.Status -eq "Up" -and $_.Inte
 $o = ([ordered]@{
     "Computer & Domäne" = "$($OsInfo.HostName) @ $($OsInfo.HostDomain) ($($OsInfo.LogonServer))".ToUpper()
     Benutzer = "$($OsInfo.UserName.ToUpper())"
-    Betriebssystem = "$($OsInfo.Caption) $($OsInfo.OSBitness), Build $([System.Environment]::OSVersion.Version.Build)"
+    Betriebssystem = "$($WinInfo.ProductName) $($WinInfo.DisplayVersion) ($((Get-WmiObject Win32_OperatingSystem).OSArchitecture))"
     "Letzter Neustart" = "$(Parse-Date -Date $OsInfo.BootDate -Format "dd.MM.yyyy HH:mm")"
     System = $( If($OsInfo.Manufacturer -like "VMware*") { "VMware Virtual Machine" } Elseif($OsInfo.Manufacturer -like "Microsoft*") { "Hyper-V Virtual Machine" } Else { $($OsInfo.Manufacturer + ' ' + $OsInfo.Model + ' (SN: ' + $OsInfo.SerialNumber + ')') })
     "Prozessor & Speicher" = "$($CpuInfoHT), $($OsInfo.MemoryMB/1024) GB RAM"
@@ -221,10 +222,11 @@ Function New-ImageInfo {
     }
 
     #Add Logo    
-    $logo = new-object system.drawing.bitmap -ArgumentList "$logoFile"
-    $logoRect = New-Object System.Drawing.RectangleF(($SR.Width - $logoWidth - $logoPaddingRight), $logoPaddingTop, $logoWidth, $logoHeight)
-    $image.DrawImage($logo, $logoRect)
-
+    If($logoFile) {
+		$logo = new-object system.drawing.bitmap -ArgumentList "$logoFile"
+		$logoRect = New-Object System.Drawing.RectangleF(($SR.Width - $logoWidth - $logoPaddingRight), $logoPaddingTop, $logoWidth, $logoHeight)
+		$image.DrawImage($logo, $logoRect)
+	}
     
     
     # Close Graphics
